@@ -15,6 +15,7 @@ from shilljudge_core.database import (
     clear_thread_score_override,
     create_contest,
     create_thread,
+    find_active_contest_thread_for_post,
     get_active_contest_post_ids,
     get_connection,
     get_contest_thread_ids,
@@ -540,6 +541,27 @@ def test_get_thread_post_ids(test_db):
 def test_get_contest_thread_ids(test_db):
     cid, tid = _make_contest_thread()
     assert get_contest_thread_ids(cid) == [tid]
+
+
+def test_find_duplicate_returns_thread_id(test_db):
+    create_contest("C", None, "2020-01-01", "2099-12-31")
+    upsert_post_data(TWEET_1)
+    thread = create_thread(["111"])
+    assert find_active_contest_thread_for_post("111") == thread["thread_id"]
+
+
+def test_find_duplicate_none_for_unknown_post(test_db):
+    create_contest("C", None, "2020-01-01", "2099-12-31")
+    upsert_post_data(TWEET_1)
+    create_thread(["111"])
+    assert find_active_contest_thread_for_post("999") is None
+
+
+def test_find_duplicate_none_without_active_contest(test_db):
+    # No contest created → thread.contest_id is NULL → not a duplicate within "active".
+    upsert_post_data(TWEET_1)
+    create_thread(["111"])
+    assert find_active_contest_thread_for_post("111") is None
 
 
 def test_recompute_thread_total_score_reflects_new_metrics(test_db):

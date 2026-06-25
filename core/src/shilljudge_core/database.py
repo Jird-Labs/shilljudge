@@ -532,6 +532,27 @@ def get_thread_post_ids(thread_id: int) -> list[str]:
         return [row["post_id"] for row in rows]
 
 
+def find_active_contest_thread_for_post(post_id: str) -> int | None:
+    """Return the thread_id of a thread in the *active* contest that already contains
+    ``post_id``, or None when there is no active contest or no such thread. Used to
+    detect duplicate public submissions."""
+    with get_connection() as conn:
+        active_id = _get_active_contest_id(conn)
+        if active_id is None:
+            return None
+        row = conn.execute(
+            """
+            SELECT tp.thread_id
+            FROM thread_posts tp
+            JOIN threads t ON tp.thread_id = t.thread_id
+            WHERE t.contest_id = ? AND tp.post_id = ?
+            LIMIT 1
+            """,
+            (active_id, post_id),
+        ).fetchone()
+        return row["thread_id"] if row else None
+
+
 def get_contest_thread_ids(contest_id: int) -> list[int]:
     """Return all thread IDs belonging to a contest (oldest first)."""
     with get_connection() as conn:
