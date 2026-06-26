@@ -1,4 +1,4 @@
-import { Heart, Repeat2, MessageCircle, Eye } from 'lucide-react';
+import { Heart, Repeat2, MessageCircle, Eye, CornerDownRight } from 'lucide-react';
 
 function Metric({ Icon, value }) {
   if (value == null) return null;
@@ -10,12 +10,17 @@ function Metric({ Icon, value }) {
   );
 }
 
-export default function TweetPreviewCard({ post, author }) {
+export default function TweetPreviewCard({ post, author, isReply = false }) {
   const m = post.public_metrics ?? {};
   const date = post.created_at ? new Date(post.created_at).toLocaleDateString() : null;
 
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 space-y-3">
+      {isReply && (
+        <p className="flex items-center gap-1 text-sky-400 text-xs font-medium">
+          <CornerDownRight size={12} /> reply
+        </p>
+      )}
       <div className="flex items-center gap-3">
         {author.profile_image_url ? (
           <img

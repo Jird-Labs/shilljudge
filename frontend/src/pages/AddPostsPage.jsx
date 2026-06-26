@@ -1,19 +1,67 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 import { previewSubmission, confirmSubmission, ApiError } from '../api';
 import Spinner from '../components/Spinner';
 import TweetPreviewCard from '../components/TweetPreviewCard';
+
+/**
+ * Order previews so that each self-reply sits directly under its parent, indented.
+ * A post B is a reply within the batch when it is the author's own reply
+ * (in_reply_to_user_id === author_id) to a post A that was also pasted
+ * (in_reply_to_post_id is present in the set). Returns [{ post, author, depth, isReply }].
+ */
+function orderChains(previews) {
+  const byId = new Map(previews.map(p => [p.post.id, p]));
+  const parentInBatch = p => {
+    const post = p.post;
+    return (
+      post.in_reply_to_user_id &&
+      post.in_reply_to_user_id === post.author_id &&
+      post.in_reply_to_post_id &&
+      byId.has(post.in_reply_to_post_id)
+    );
+  };
+
+  const children = new Map(); // parentId -> [preview]
+  const roots = [];
+  for (const p of previews) {
+    if (parentInBatch(p)) {
+      const pid = p.post.in_reply_to_post_id;
+      if (!children.has(pid)) children.set(pid, []);
+      children.get(pid).push(p);
+    } else {
+      roots.push(p);
+    }
+  }
+
+  const ordered = [];
+  const visited = new Set();
+  const walk = (p, depth) => {
+    if (visited.has(p.post.id)) return; // guard against reply cycles
+    visited.add(p.post.id);
+    ordered.push({ ...p, depth, isReply: depth > 0 });
+    for (const c of children.get(p.post.id) ?? []) walk(c, depth + 1);
+  };
+  for (const r of roots) walk(r, 0);
+  for (const p of previews) if (!visited.has(p.post.id)) walk(p, 0); // orphans
+  return ordered;
+}
 
 // state: idle | previewing | preview | confirming | done
 export default function AddPostsPage() {
   const [input, setInput] = useState('');
   const [phase, setPhase] = useState('idle');
-  const [previews, setPreviews] = useState([]);  // [{post, author}]
+  const [previews, setPreviews] = useState([]);  // raw results: {status, post, author} | {status:'deleted', post_id}
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [errorCode, setErrorCode] = useState(null);
 
   const urls = input.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+
+  const okPreviews = previews.filter(p => p.status !== 'deleted' && p.post);
+  const deletedPreviews = previews.filter(p => p.status === 'deleted');
+  const orderedOk = orderChains(okPreviews);
 
   const handlePreview = async e => {
     e.preventDefault();
@@ -43,7 +91,7 @@ export default function AddPostsPage() {
     setPhase('confirming');
     setError(null);
     setErrorCode(null);
-    const postIds = previews.map(p => p.post.id);
+    const postIds = orderedOk.map(p => p.post.id);  // parent-first; deleted posts excluded
     try {
       const data = await confirmSubmission(postIds);
       setResult(data);
@@ -104,15 +152,29 @@ export default function AddPostsPage() {
       {phase === 'preview' && previews.length > 0 && (
         <div className="space-y-3">
           <p className="text-zinc-400 text-sm">
-            {previews.length === 1 ? 'Confirm this post?' : `Confirm these ${previews.length} posts?`}
+            {okPreviews.length === 0
+              ? 'No live posts to submit.'
+              : okPreviews.length === 1 ? 'Confirm this post?' : `Confirm these ${okPreviews.length} posts?`}
           </p>
-          {previews.map(({ post, author }) => (
-            <TweetPreviewCard key={post.id} post={post} author={author} />
+
+          {orderedOk.map(({ post, author, isReply, depth }) => (
+            <div key={post.id} style={depth ? { marginLeft: `${Math.min(depth, 4) * 16}px` } : undefined}>
+              <TweetPreviewCard post={post} author={author} isReply={isReply} />
+            </div>
           ))}
+
+          {deletedPreviews.map(({ post_id }) => (
+            <div key={post_id} className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-500 text-sm">
+              <Trash2 size={14} className="shrink-0" />
+              <span>Post <span className="text-zinc-400">{post_id}</span> was deleted or is unavailable — it will be skipped.</span>
+            </div>
+          ))}
+
           <div className="flex gap-3 pt-1">
             <button
               onClick={handleConfirm}
-              className="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
+              disabled={okPreviews.length === 0}
+              className="flex-1 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl text-sm transition-colors"
             >
               Confirm & Submit
             </button>
