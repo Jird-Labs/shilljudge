@@ -33,7 +33,7 @@ def get_poll_status() -> dict:
 
 async def _poll_metrics(client) -> None:
     """Re-fetch and re-score every post in the active contest using ``client``."""
-    from database import (
+    from shilljudge_core.database import (
         get_active_contest,
         get_active_contest_post_ids,
         insert_metric_snapshot,

@@ -12,7 +12,7 @@ import logging
 import requests
 from xdk import Client
 
-from database import upsert_user_data
+from shilljudge_core.database import upsert_user_data
 
 logger = logging.getLogger(__name__)
 

@@ -10,9 +10,9 @@ from contextlib import contextmanager
 import pytest
 import requests
 
-import database
+from shilljudge_core import database
 import scheduler
-from database import create_contest, create_thread, upsert_post_data
+from shilljudge_core.database import create_contest, create_thread, upsert_post_data
 
 
 # ── Mock xdk client ───────────────────────────────────────────────────────────

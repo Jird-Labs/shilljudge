@@ -3,9 +3,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import database
+from shilljudge_core import database
 from app import app
-from database import create_contest
+from shilljudge_core.database import create_contest
 
 
 def test_get_optional_user_returns_none_without_session(test_db):
@@ -96,7 +96,7 @@ def test_submit_no_app_token_returns_503(client):
 
 def test_submit_on_submission_rejection_returns_403(submit_client):
     create_contest("C", None, "2020-01-01", "2099-12-31")
-    from hooks import registry, ON_SUBMISSION
+    from shilljudge_core.hooks import registry, ON_SUBMISSION
 
     def reject(post_ids, ctx):
         return []
@@ -144,7 +144,7 @@ def test_preview_no_active_contest_returns_409(submit_client):
 
 
 def test_submit_suspended_user_from_db_returns_403(submit_client, monkeypatch):
-    import database
+    from shilljudge_core import database
     from auth import get_optional_user
     with database.get_connection() as conn:
         conn.execute("UPDATE users SET participation_status='suspended' WHERE x_id='user1'")

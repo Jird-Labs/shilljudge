@@ -4,7 +4,7 @@ These tests drive the new endpoints end-to-end against the mocked X client
 (MOCK_TWEETS in conftest). DB state (contest + thread) is seeded directly via
 the database module, mirroring the core test style.
 """
-import database
+from shilljudge_core import database
 import pytest
 
 

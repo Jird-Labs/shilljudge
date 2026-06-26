@@ -23,7 +23,7 @@ from xdk.oauth2_auth import OAuth2PKCEAuth
 
 from auth import get_current_user, get_optional_user, get_x_client_for_user, require_admin
 from config import get_settings
-from database import (
+from shilljudge_core.database import (
     clear_thread_score_override,
     create_contest,
     create_thread,
@@ -59,20 +59,19 @@ from database import (
     WEIGHT_COLUMNS,
 )
 from engagement import analyze_post_engagement
-from hooks import ENRICH_LEADERBOARD, ON_SUBMISSION, registry
-from models import (
+from shilljudge_core.hooks import ENRICH_LEADERBOARD, ON_SUBMISSION, registry
+from shilljudge_core.models import (
     ConfirmSubmissionRequest,
     CreateContestRequest,
-    OverrideScoreRequest,
     PreviewSubmissionRequest,
     UpdateContestRequest,
-    UpdateUserRequest,
     WalletRequest,
 )
+from schemas import OverrideScoreRequest, UpdateUserRequest
 from scheduler import get_poll_status, start_scheduler, stop_scheduler
 from solana_client import SolanaCheckError, check_wallet_staked
-from token_storage import load_user_token, save_user_token
-from utils import parse_post_id
+from shilljudge_core.token_storage import load_user_token, save_user_token
+from shilljudge_core.utils import parse_post_id
 from x_client import DEFAULT_TWEET_FIELDS, DEFAULT_USER_FIELDS, build_user_client, _tokens_differ
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO").upper())

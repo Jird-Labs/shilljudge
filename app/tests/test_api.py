@@ -4,8 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
-import database
-from database import create_contest
+from shilljudge_core import database
+from shilljudge_core.database import create_contest
 
 
 # Minimal standalone mock — not imported from conftest to avoid module-not-found in dynamic tests
@@ -293,7 +293,7 @@ def test_leaderboard_sort_query_params_echoed(client):
 
 def test_leaderboard_enrich_hook_adds_columns(user_client):
     """A registered ENRICH_LEADERBOARD handler enriches each thread row."""
-    from hooks import registry, ENRICH_LEADERBOARD
+    from shilljudge_core.hooks import registry, ENRICH_LEADERBOARD
 
     user_client.post("/submissions/confirm", json={"post_ids": ["111"]})
 
@@ -374,7 +374,7 @@ def _run_oauth_callback(app, monkeypatch, app_module, user_id: str, username: st
 
 
 def test_first_user_auto_becomes_admin(tmp_path, monkeypatch):
-    import database
+    from shilljudge_core import database
     import app as app_module
     from app import app
 
@@ -390,7 +390,7 @@ def test_first_user_auto_becomes_admin(tmp_path, monkeypatch):
 
 
 def test_second_user_not_auto_admin(tmp_path, monkeypatch):
-    import database
+    from shilljudge_core import database
     import app as app_module
     from app import app
 

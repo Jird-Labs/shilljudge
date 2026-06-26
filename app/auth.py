@@ -9,8 +9,8 @@ from fastapi import Depends, HTTPException, Request
 from xdk import Client
 
 from config import get_settings
-from database import get_user
-from token_storage import load_user_token, save_user_token
+from shilljudge_core.database import get_user
+from shilljudge_core.token_storage import load_user_token, save_user_token
 from x_client import build_user_client, _tokens_differ
 
 

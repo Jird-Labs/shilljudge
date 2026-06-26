@@ -12,7 +12,7 @@ os.environ.setdefault("X_CLIENT_SECRET", "test-dummy-client-secret")
 import pytest
 from fastapi.testclient import TestClient
 
-import database
+from shilljudge_core import database
 from app import app, limiter
 from auth import get_current_user, get_x_client_for_user
 
