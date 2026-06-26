@@ -32,4 +32,8 @@ def load_app_extensions() -> list[dict[str, Any]]:
     spec.loader.exec_module(module)
     # Allow tests (and deployment overrides) to redirect community/premium discovery.
     module._EXTENSIONS_DIR = ext_dir
+    assert module._EXTENSIONS_DIR == ext_dir, (
+        "extensions/loader.py no longer exposes _EXTENSIONS_DIR as a patchable "
+        "module global — update load_app_extensions()."
+    )
     return module.load_extensions(registry, enable_premium=get_feature_flags().enable_premium)

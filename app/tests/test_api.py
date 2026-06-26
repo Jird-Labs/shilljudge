@@ -312,7 +312,8 @@ def test_leaderboard_enrich_hook_adds_columns(user_client):
 
 
 def test_leaderboard_base_response_has_no_premium_columns(user_client):
-    """With no extensions loaded the hook is a no-op; rows are unchanged."""
+    """Extensions load at startup but no premium column (e.g. premium_flag) should appear;
+    community extensions may add their own columns, but not premium-gated ones."""
     user_client.post("/submissions/confirm", json={"post_ids": ["111"]})
     data = user_client.get("/leaderboard").json()
     assert all("premium_flag" not in r for r in data["threads"])

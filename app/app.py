@@ -91,6 +91,7 @@ async def lifespan(app: FastAPI):
             seed_db()
         except ImportError:
             pass
+    # Deferred import: keeps extension loading out of module-level import scope and avoids loading the loader until startup.
     from extensions_loader import load_app_extensions
     loaded = load_app_extensions()
     logger.info("Loaded %d extension(s): %s", len(loaded), [m.get("name") for m in loaded])
