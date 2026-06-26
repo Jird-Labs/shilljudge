@@ -15,6 +15,7 @@ from shilljudge_core.database import (
     clear_thread_score_override,
     create_contest,
     create_thread,
+    delete_thread,
     find_active_contest_thread_for_post,
     get_active_contest_post_ids,
     get_connection,
@@ -555,6 +556,58 @@ def test_find_duplicate_none_for_unknown_post(test_db):
     upsert_post_data(TWEET_1)
     create_thread(["111"])
     assert find_active_contest_thread_for_post("999") is None
+
+
+# ── enrich_thread dispatch + delete_thread (DEV-23) ───────────────────────────
+
+def test_create_thread_dispatches_enrich_thread(test_db):
+    """create_thread runs the assembled thread through the ENRICH_THREAD hook so
+    extensions can augment it. No-op passthrough when no handler is registered."""
+    from shilljudge_core.hooks import registry, ENRICH_THREAD
+
+    def tag(thread):
+        thread.setdefault("metadata", {})["dev23"] = True
+        return thread
+
+    upsert_post_data(TWEET_1)
+    registry.register(ENRICH_THREAD, tag)
+    try:
+        thread = create_thread(["111"])
+        assert thread.get("metadata", {}).get("dev23") is True
+        # The core thread fields are still present and untouched.
+        assert thread["post_count"] == 1
+        assert thread["total_score"] > 0
+    finally:
+        registry.deregister(ENRICH_THREAD, tag)
+
+
+def test_create_thread_enrich_passthrough_without_handler(test_db):
+    upsert_post_data(TWEET_1)
+    thread = create_thread(["111"])
+    assert thread["thread_id"] is not None
+    assert "metadata" not in thread  # nothing injected
+
+
+def test_delete_thread_removes_thread_links_and_scores(test_db):
+    upsert_post_data(TWEET_1)
+    upsert_post_data(TWEET_2)
+    thread = create_thread(["111", "222"])
+    tid = thread["thread_id"]
+
+    assert delete_thread(tid) is True
+
+    with database.get_connection() as conn:
+        assert conn.execute("SELECT 1 FROM threads WHERE thread_id = ?", (tid,)).fetchone() is None
+        assert conn.execute("SELECT 1 FROM thread_posts WHERE thread_id = ?", (tid,)).fetchone() is None
+        # Per-post scores for the thread's posts are gone …
+        assert conn.execute("SELECT 1 FROM thread_scores WHERE post_id = '111'").fetchone() is None
+        assert conn.execute("SELECT 1 FROM thread_scores WHERE post_id = '222'").fetchone() is None
+        # … but the cached posts rows themselves remain (unlike delete_post).
+        assert conn.execute("SELECT 1 FROM posts WHERE post_id = '111'").fetchone() is not None
+
+
+def test_delete_thread_missing_returns_false(test_db):
+    assert delete_thread(999) is False
 
 
 def test_find_duplicate_none_without_active_contest(test_db):

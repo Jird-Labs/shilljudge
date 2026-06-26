@@ -4,7 +4,7 @@ import {
   Search, ShieldCheck, ShieldOff, Ban, CircleCheck,
 } from 'lucide-react';
 import {
-  getManageUsers, patchUser, deleteUser, getUserThreads, deletePost,
+  getManageUsers, patchUser, deleteUser, getUserThreads, deletePost, deleteThread,
   getManageContests, createContest, updateContest, deleteContest,
 } from '../api';
 import { useAuth } from '../AuthContext';
@@ -339,6 +339,7 @@ function UserThreads({ xId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmPostId, setConfirmPostId] = useState(null);
+  const [confirmThreadId, setConfirmThreadId] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -364,6 +365,19 @@ function UserThreads({ xId }) {
     }
   };
 
+  const handleDeleteThread = async threadId => {
+    setDeleting(true);
+    try {
+      await deleteThread(threadId);
+      setConfirmThreadId(null);
+      setThreads(ts => ts.filter(t => t.thread_id !== threadId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <p className="text-zinc-500 text-xs py-3 pl-2">Loading threads…</p>;
   if (error) return <p className="text-red-400 text-xs py-3 pl-2">{error}</p>;
   if (!threads?.length) return <p className="text-zinc-500 text-xs py-3 pl-2">No threads.</p>;
@@ -372,7 +386,27 @@ function UserThreads({ xId }) {
     <div className="mt-3 space-y-3 border-t border-zinc-800 pt-3">
       {threads.map(t => (
         <div key={t.thread_id} className="space-y-1.5">
-          <p className="text-zinc-500 text-xs">Thread · {t.post_count} post{t.post_count !== 1 ? 's' : ''} · Score {t.total_score?.toFixed(1)}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-zinc-500 text-xs flex-1">Thread · {t.post_count} post{t.post_count !== 1 ? 's' : ''} · Score {t.total_score?.toFixed(1)}</p>
+            {confirmThreadId === t.thread_id ? (
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => handleDeleteThread(t.thread_id)} disabled={deleting}
+                  className="text-xs bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white px-2 py-0.5 rounded font-medium">
+                  {deleting ? '…' : 'Delete thread'}
+                </button>
+                <button onClick={() => setConfirmThreadId(null)}
+                  className="text-xs bg-zinc-600 hover:bg-zinc-500 text-white px-2 py-0.5 rounded font-medium">
+                  No
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmThreadId(t.thread_id)}
+                className="shrink-0 flex items-center gap-1 text-xs text-zinc-600 hover:text-red-400 transition-colors px-1.5 py-0.5 rounded hover:bg-red-950/40"
+                title="Delete entire thread">
+                <Trash2 size={12} /> Thread
+              </button>
+            )}
+          </div>
           {t.posts.map(p => (
             <div key={p.post_id} className="flex items-start gap-2 bg-zinc-800 rounded-lg px-3 py-2">
               <p className="text-zinc-300 text-xs flex-1 line-clamp-2 leading-snug">{p.text || p.post_id}</p>

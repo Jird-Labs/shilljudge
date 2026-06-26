@@ -50,7 +50,30 @@ MOCK_TWEETS = {
             "impression_count": 500,
         },
     },
+    # 333 is user1's self-reply to 111 (referenced_tweets carries the parent id;
+    # there is no native in_reply_to_post_id field in the X v2 API).
+    "333": {
+        "id": "333",
+        "author_id": "user1",
+        "text": "Self-reply to the first tweet",
+        "created_at": "2024-01-01T00:00:02.000Z",
+        "in_reply_to_user_id": "user1",
+        "referenced_tweets": [{"type": "replied_to", "id": "111"}],
+        "public_metrics": {
+            "retweet_count": 1,
+            "reply_count": 0,
+            "like_count": 10,
+            "quote_count": 0,
+            "bookmark_count": 2,
+            "impression_count": 100,
+        },
+    },
 }
+
+# Id used to simulate a deleted/missing tweet: the X API returns 200 with no
+# `data` (rather than an HTTP error), which the preview must surface as a
+# "deleted" marker instead of failing the whole batch.
+DELETED_POST_ID = "404404"
 
 MOCK_USER = {
     "x_id": "user1",
@@ -108,6 +131,9 @@ class MockXClient:
             return _MockPostsResponse(ids)
 
         def get_by_id(self, id, tweet_fields=None, **kwargs):
+            # A deleted tweet comes back from X as 200 with no data (not an HTTP error).
+            if id == DELETED_POST_ID:
+                return _MockSinglePostResponse(None)
             tweet = MOCK_TWEETS.get(id)
             if not tweet:
                 import requests as req

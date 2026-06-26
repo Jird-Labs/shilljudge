@@ -130,3 +130,7 @@ export async function getUserThreads(xId) {
 export async function deletePost(postId) {
   return apiFetch(`/manage/post/${encodeURIComponent(postId)}`, { method: 'DELETE' });
 }
+
+export async function deleteThread(threadId) {
+  return apiFetch(`/manage/thread/${encodeURIComponent(threadId)}`, { method: 'DELETE' });
+}

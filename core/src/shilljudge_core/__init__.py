@@ -17,6 +17,7 @@ from .database import (
     create_thread,
     delete_contest,
     delete_post,
+    delete_thread,
     delete_user_data,
     get_active_contest,
     get_all_contests,
