@@ -1,0 +1,9 @@
+{
+  "name": "ai-weighted-leaderboard",
+  "version": "1.0.0",
+  "description": "AI-weighted leaderboard that blends engagement scores with DeepSeek content-quality ratings.",
+  "hooks": ["on_leaderboard_query"],
+  "requires_license": true,
+  "min_tier": "hosted",
+  "implementation": "shilljudge-premium/ai-weighted-leaderboard"
+}

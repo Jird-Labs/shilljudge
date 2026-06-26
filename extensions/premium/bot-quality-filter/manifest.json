@@ -1,0 +1,9 @@
+{
+  "name": "bot-quality-filter",
+  "version": "1.0.0",
+  "description": "ML-based bot and low-quality engagement filter that goes beyond the open-core follower heuristic.",
+  "hooks": ["on_post_ingested"],
+  "requires_license": true,
+  "min_tier": "hosted",
+  "implementation": "shilljudge-premium/bot-quality-filter"
+}

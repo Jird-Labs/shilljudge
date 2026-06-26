@@ -1,0 +1,9 @@
+{
+  "name": "authenticated-submission-portal",
+  "version": "1.0.0",
+  "description": "Verified-identity submission portal with KYC-backed shill authentication.",
+  "hooks": ["on_thread_submitted", "on_user_login"],
+  "requires_license": true,
+  "min_tier": "hosted",
+  "implementation": "shilljudge-premium/authenticated-submission-portal"
+}

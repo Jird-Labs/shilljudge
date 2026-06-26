@@ -150,3 +150,12 @@ __pycache__/
 venv/
 *.db
 .pytest_cache/
+
+dist/
+node_modules/
+.venv/
+__pycache__/
+*.db
+.env
+x_oauth_tokens.json
+uvicorn_*.txt

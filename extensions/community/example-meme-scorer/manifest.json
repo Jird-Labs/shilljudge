@@ -1,0 +1,16 @@
+{
+  "name": "example-meme-scorer",
+  "version": "0.1.0",
+  "description": "Community example extension: applies a small meme-quality bonus to thread scores.",
+  "author": "community",
+  "license": "MIT",
+  "hooks": ["enrich_thread", "enrich_leaderboard"],
+  "requires_license": false,
+  "config": {
+    "meme_bonus_weight": {
+      "type": "float",
+      "default": 0.1,
+      "description": "Fraction of base score added as meme-quality bonus."
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "wallet-verifier",
+  "version": "1.0.0",
+  "description": "Enhanced Solana wallet and $NRSE token stake verification with on-chain balance checks.",
+  "hooks": ["on_stake_check"],
+  "requires_license": true,
+  "min_tier": "hosted",
+  "implementation": "shilljudge-premium/wallet-verifier"
+}

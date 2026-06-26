@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Precision Arena leaderboard aesthetics */
+.leaderboard-arena {
+  /* subtle data-grid texture for depth */
+  background-image: 
+    linear-gradient(rgba(63, 63, 70, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 63, 70, 0.035) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.rank-stamp {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.05em;
+}
+
+.metric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.score-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.04em;
+}
+
+.list-item {
+  transition: transform 160ms cubic-bezier(0.23, 1.0, 0.32, 1), 
+              background-color 160ms ease,
+              border-color 160ms ease,
+              box-shadow 160ms ease;
+}
+
+.list-item:hover {
+  transform: translateX(1px);
+  background-color: #18181b;
+  border-color: #3f3f46;
+}
+
+.list-item:active {
+  transform: scale(0.985);
+}
+
+.rail {
+  transition: width 280ms cubic-bezier(0.23, 1.0, 0.32, 1);
+}
+
+.control-btn {
+  transition: all 120ms ease;
+}
+
+.control-btn-active {
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.4);
+  background-color: rgba(103, 232, 249, 0.06);
+}
+
+.filter-chip {
+  transition: all 130ms ease;
+}
+
+.filter-chip-active {
+  background-color: #164e63;
+  border-color: #22d3ee;
+  color: #67e8f9;
+}
+
+@keyframes list-recalibrate {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.recal-item {
+  animation: list-recalibrate 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
