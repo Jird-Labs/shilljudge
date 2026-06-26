@@ -7,9 +7,9 @@
 ```bash
 # From the repo root (workspace-aware):
 cd app
-uv run python -m pytest       # run the test suite
+uv run python -m pytest       # run tests — use `python -m pytest`, NOT bare `pytest` (shim resolves wrong here)
 uv run fastapi dev app.py     # start the dev server (default port 8000)
-uv run fastapi dev app.py --port 8080  # on a specific port
+uv run fastapi dev app.py --port 8080  # use 8080 to match the Vite dev proxy (frontend: `cd frontend && npm run dev`)
 ```
 
 ## Key files

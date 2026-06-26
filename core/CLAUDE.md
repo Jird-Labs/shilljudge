@@ -20,6 +20,9 @@ shilljudge-core is the **open-core foundation** library.
 - Any React / frontend code
 - Per-app config (X creds, admin list, frontend URLs, Solana RPC)
 
+## Consumed by
+`app/` imports this as a uv-workspace dependency (no vendored copies). `upsert_post_data` routes the base score through the `CALCULATE_SCORE` hook on the shared `shilljudge_core.hooks.registry`.
+
 ## Running
 ```bash
 uv sync
