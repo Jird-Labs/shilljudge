@@ -4,7 +4,7 @@ FastAPI service that signs in with **X OAuth 2.0 (PKCE)** using the official [`x
 
 ## Setup
 
-1. Create `backend/.env` from `.env.example` and set **`X_CLIENT_ID`** and **`X_CLIENT_SECRET`** from the X Developer Portal under **your app → User authentication settings (OAuth 2.0)**. These are the OAuth 2.0 client credentials, not OAuth 1.0a “Access token & secret”.
+1. Create `app/.env` from `.env.example` and set **`X_CLIENT_ID`** and **`X_CLIENT_SECRET`** from the X Developer Portal under **your app → User authentication settings (OAuth 2.0)**. These are the OAuth 2.0 client credentials, not OAuth 1.0a “Access token & secret”.
 2. In the portal, add a **Callback / Redirect URI** that matches **`X_REDIRECT_URI` exactly** (scheme, host, port, path). For local development with **`npm run dev`**, prefer `http://localhost:5173/oauth/callback` and **`FRONTEND_URL=http://localhost:5173`** so X redirects to the Vite dev server (which proxies `/oauth` to this API); then you are not left on port **8080** after authorize, and the PKCE session cookie matches the callback host. If you open the app at **`127.0.0.1:5173`**, use that host in both URLs instead of `localhost` (browsers treat them as different sites). You can still use **`http://127.0.0.1:8080/oauth/callback`** if you always start OAuth by visiting **`/oauth/login` on 8080`** (not only through the SPA).
 3. Install and run (from `backend/`):
 
