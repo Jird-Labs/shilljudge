@@ -28,7 +28,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from .hooks import CALCULATE_SCORE, registry
+from .hooks import CALCULATE_SCORE, ENRICH_THREAD, registry
 
 DB_PATH = Path(os.environ.get("DB_PATH", str(Path(__file__).parent / "shilljudge_core.db")))
 
@@ -510,7 +510,13 @@ def create_thread(post_ids: list[str]) -> dict[str, Any]:
             "SELECT thread_id, x_id, created_at, total_score, post_count FROM threads WHERE thread_id = ?",
             (thread_id,),
         ).fetchone()
-        return dict(row)
+        thread = dict(row)
+
+    # Route the assembled thread through the ENRICH_THREAD hook (outside the DB
+    # transaction, so handlers may open their own connections) so extensions can
+    # augment it — e.g. premium AI review / bot-filter signals. No-op passthrough
+    # when no handler is registered.
+    return registry.call(ENRICH_THREAD, thread)
 
 
 def get_thread(thread_id: int) -> dict[str, Any] | None:
@@ -1056,6 +1062,29 @@ def delete_post(post_id: str) -> bool:
                 (tid, tid, tid),
             )
         return True
+
+
+def delete_thread(thread_id: int) -> bool:
+    """Remove a whole thread: the per-post scores of its posts, its thread_posts
+    links, and the thread row itself. Returns True if a thread row was removed.
+
+    Distinct from ``delete_post`` (which removes a single post + its score and
+    recomputes the affected threads' totals). The cached ``posts`` rows are left
+    intact — only the thread structure is torn down.
+
+    Note: ``thread_scores`` is keyed by ``post_id`` (it has no ``thread_id``
+    column), so the scores are removed via a subquery over this thread's posts —
+    and that delete must run *before* the thread_posts links are removed.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM thread_scores WHERE post_id IN "
+            "(SELECT post_id FROM thread_posts WHERE thread_id = ?)",
+            (thread_id,),
+        )
+        conn.execute("DELETE FROM thread_posts WHERE thread_id = ?", (thread_id,))
+        result = conn.execute("DELETE FROM threads WHERE thread_id = ?", (thread_id,))
+        return result.rowcount > 0
 
 
 def get_all_users(q: str | None = None) -> list[dict]:

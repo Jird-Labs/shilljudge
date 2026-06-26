@@ -29,6 +29,7 @@ from shilljudge_core.database import (
     create_thread,
     delete_contest,
     delete_post,
+    delete_thread,
     delete_user_data,
     find_active_contest_thread_for_post,
     get_active_contest,
@@ -72,7 +73,7 @@ from scheduler import get_poll_status, start_scheduler, stop_scheduler
 from solana_client import SolanaCheckError, check_wallet_staked
 from shilljudge_core.token_storage import load_user_token, save_user_token
 from shilljudge_core.utils import parse_post_id
-from x_client import DEFAULT_TWEET_FIELDS, DEFAULT_USER_FIELDS, build_user_client, _tokens_differ
+from x_client import DEFAULT_TWEET_FIELDS, DEFAULT_USER_FIELDS, build_user_client, reply_meta, _tokens_differ
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO").upper())
 logger = logging.getLogger(__name__)
@@ -488,7 +489,10 @@ async def preview_submission(
     result = resp.model_dump() if hasattr(resp, "model_dump") else resp
     tweet = result.get("data") if isinstance(result, dict) else None
     if not tweet or not tweet.get("id"):
-        raise HTTPException(status_code=404, detail="Post not found on X.")
+        # Deleted/missing tweet: X returns 200 with no data. Surface a marker so a
+        # single dead post does not abort a multi-paste batch preview (DEV-23).
+        logger.warning("Preview: post %s not found on X (deleted?)", post_id)
+        return {"status": "deleted", "post_id": post_id}
 
     if tweet.get("author_id") != user["x_id"]:
         raise HTTPException(
@@ -496,13 +500,17 @@ async def preview_submission(
             detail={"error": "not_your_post", "message": "You can only submit your own posts."},
         )
 
+    # Expose self-reply chain metadata so the client can group reply chains
+    # (in_reply_to_post_id is derived from referenced_tweets).
+    tweet.update(reply_meta(tweet))
+
     author = {
         "x_id": user["x_id"],
         "x_username": user.get("x_username"),
         "name": user.get("name"),
         "profile_image_url": user.get("profile_image_url"),
     }
-    return {"post": tweet, "author": author}
+    return {"status": "ok", "post": tweet, "author": author}
 
 
 @app.post("/submissions/confirm")
@@ -818,6 +826,18 @@ async def manage_delete_post(
     deleted = delete_post(post_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Post not found.")
+    return {"ok": True}
+
+
+@app.delete("/manage/thread/{thread_id}")
+async def manage_delete_thread(
+    thread_id: int,
+    admin: Annotated[dict, Depends(require_admin)],
+) -> dict[str, bool]:
+    """Admin: remove an entire thread (its links + per-post scores) from the contest."""
+    deleted = delete_thread(thread_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Thread not found.")
     return {"ok": True}
 
 

@@ -504,3 +504,69 @@ def test_admin_can_update_contest(admin_client):
     data = upd.json()
     assert data["title"] == "New"
     assert data["must_stake_token"] == 1
+
+
+# ── DEV-23: reply metadata in preview ─────────────────────────────────────────
+
+def test_preview_includes_reply_metadata_for_self_reply(user_client):
+    """A self-reply preview surfaces in_reply_to_user_id and the derived
+    in_reply_to_post_id (from referenced_tweets)."""
+    resp = user_client.post("/submissions/preview", json={"url": "https://x.com/u/status/333"})
+    assert resp.status_code == 200
+    post = resp.json()["post"]
+    assert post["in_reply_to_user_id"] == "user1"
+    assert post["in_reply_to_post_id"] == "111"
+
+
+def test_preview_reply_metadata_null_for_top_level_post(user_client):
+    """A non-reply post still carries the reply keys, both null."""
+    resp = user_client.post("/submissions/preview", json={"url": "https://x.com/u/status/111"})
+    assert resp.status_code == 200
+    post = resp.json()["post"]
+    assert post["in_reply_to_user_id"] is None
+    assert post["in_reply_to_post_id"] is None
+
+
+# ── DEV-23: deleted/missing post handling in preview ──────────────────────────
+
+def test_preview_deleted_post_returns_marker_not_error(user_client):
+    """When X returns 200 with no data (deleted tweet), preview returns a
+    status:deleted marker rather than a 5xx/404."""
+    from tests.conftest import DELETED_POST_ID
+    resp = user_client.post(
+        "/submissions/preview", json={"url": f"https://x.com/u/status/{DELETED_POST_ID}"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "deleted"
+    assert data["post_id"] == DELETED_POST_ID
+
+
+# ── DEV-23: admin delete thread ───────────────────────────────────────────────
+
+def _seed_thread():
+    """Insert two posts and a thread directly via core; return the thread_id."""
+    from shilljudge_core.database import create_thread, upsert_post_data
+    from tests.conftest import MOCK_TWEETS
+    upsert_post_data(MOCK_TWEETS["111"])
+    upsert_post_data(MOCK_TWEETS["222"])
+    return create_thread(["111", "222"])["thread_id"]
+
+
+def test_admin_delete_thread_removes_it(admin_client):
+    tid = _seed_thread()
+    resp = admin_client.delete(f"/manage/thread/{tid}")
+    assert resp.status_code == 200
+    assert resp.json()["ok"] is True
+    with database.get_connection() as conn:
+        assert conn.execute("SELECT 1 FROM threads WHERE thread_id = ?", (tid,)).fetchone() is None
+        assert conn.execute("SELECT 1 FROM thread_posts WHERE thread_id = ?", (tid,)).fetchone() is None
+
+
+def test_admin_delete_thread_missing_returns_404(admin_client):
+    assert admin_client.delete("/manage/thread/99999").status_code == 404
+
+
+def test_delete_thread_requires_admin(user_client):
+    tid = _seed_thread()
+    assert user_client.delete(f"/manage/thread/{tid}").status_code == 403
