@@ -1,7 +1,7 @@
 """Auth primitives for the foundation (user identity + admin gate).
 
 These are framework-agnostic. FastAPI Depends wrappers live in the concrete app
-(e.g. thread-helper) so that core has no hard dependency on FastAPI or xdk.
+(the ShillJudge app (`app/`)) so that core has no hard dependency on FastAPI or xdk.
 
 Consumers typically do:
 

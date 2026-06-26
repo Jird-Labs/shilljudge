@@ -8,7 +8,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6">
       <div className="text-center space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">thread-helper</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">ShillJudge</h1>
           <p className="text-zinc-500 mt-2 text-sm">Track and score your X thread performance</p>
         </div>
         <a

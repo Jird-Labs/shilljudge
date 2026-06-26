@@ -1,7 +1,7 @@
 """Core database + scoring + leaderboard + contest tests.
 
 These are the canonical tests for the public scoring formula and foundation queries.
-All numbers must remain byte-for-byte identical to the original thread-helper implementation.
+All numbers must remain byte-for-byte identical to the original ShillJudge implementation.
 """
 import sys
 from pathlib import Path

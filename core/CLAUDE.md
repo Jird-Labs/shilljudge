@@ -12,7 +12,7 @@ shilljudge-core is the **open-core foundation** library.
 - Auth/user primitives + token storage (DB)
 - Feature flags (always from day 1)
 
-## What does NOT belong here (stay in apps like thread-helper)
+## What does NOT belong here (stay in the app layer (`app/`))
 - FastAPI app + route definitions + middlewares
 - Full X OAuth PKCE dance + redirects + xdk Client construction
 - `engagement.analyze_post_engagement` (X-specific calls)

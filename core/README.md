@@ -2,7 +2,7 @@
 
 Open-core foundation (MIT) for X/Twitter thread contest judging and leaderboards.
 
-This package provides the reusable data layer, public scoring, contest management, leaderboard computation, auth primitives, and feature flags used by self-hosted apps (e.g. thread-helper) and the premium hosted product.
+This package provides the reusable data layer, public scoring, contest management, leaderboard computation, auth primitives, and feature flags used by the ShillJudge app (`app/`) and the premium hosted product.
 
 See root [README.md](../README.md) for the overall project vision (open-core + premium hosted with AI, private metrics, advanced bot filtering, $NRSE/SOL access).
 

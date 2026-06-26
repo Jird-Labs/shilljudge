@@ -1,4 +1,4 @@
-"""Tests for parse_post_id (moved from thread-helper as pure core utility)."""
+"""Tests for parse_post_id (extracted into shilljudge-core as a pure utility)."""
 import sys
 from pathlib import Path
 

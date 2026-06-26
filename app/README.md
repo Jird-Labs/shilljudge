@@ -1,4 +1,4 @@
-# thread-helper backend
+# ShillJudge App (backend)
 
 FastAPI service that signs in with **X OAuth 2.0 (PKCE)** using the official [`xdk`](https://pypi.org/project/xdk/) client, then reads posts with user-context auth (needed for metrics fields such as `organic_metrics` / `non_public_metrics` on the [Posts lookup by IDs](https://developer.x.com/en/docs/twitter-api/tweets/lookup/api-reference/get-tweets) API).
 

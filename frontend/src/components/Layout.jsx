@@ -28,7 +28,7 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       <header className="sticky top-0 z-10 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
-        <span className="text-white font-bold text-lg tracking-tight">thread-helper</span>
+        <span className="text-white font-bold text-lg tracking-tight">ShillJudge</span>
         <div className="text-xs">
           {authenticated ? (
             <div className="flex items-center gap-3">

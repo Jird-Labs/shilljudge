@@ -103,7 +103,7 @@ async def lifespan(app: FastAPI):
         stop_scheduler()
 
 
-app = FastAPI(title="thread-helper backend", lifespan=lifespan)
+app = FastAPI(title="ShillJudge", lifespan=lifespan)
 
 settings = get_settings()
 
