@@ -570,3 +570,22 @@ def test_admin_delete_thread_missing_returns_404(admin_client):
 def test_delete_thread_requires_admin(user_client):
     tid = _seed_thread()
     assert user_client.delete(f"/manage/thread/{tid}").status_code == 403
+
+
+def test_confirm_fires_enrich_thread_hook(user_client):
+    """The ENRICH_THREAD hook fires for every thread assembled through the app."""
+    from shilljudge_core.hooks import registry, ENRICH_THREAD
+
+    seen = []
+
+    def record(thread):
+        seen.append(thread.get("thread_id"))
+        return thread
+
+    registry.register(ENRICH_THREAD, record)
+    try:
+        resp = user_client.post("/submissions/confirm", json={"post_ids": ["111"]})
+        assert resp.status_code == 200
+        assert seen == [resp.json()["thread_id"]]
+    finally:
+        registry.deregister(ENRICH_THREAD, record)
