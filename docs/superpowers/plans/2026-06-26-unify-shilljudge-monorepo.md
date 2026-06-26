@@ -52,15 +52,15 @@ Expected: a new commit pushed to `github.com/Jird-Labs/thread-helper`. `.env`, `
 
 - [ ] **Step 2: Create the migration branch in the monorepo**
 
+Branch off the **current `jird/dev-25` HEAD** (NOT `main`) — `main` lacks the DEV-25 core functions (`score_post`, `find_active_contest_thread_for_post`) that Task 4's dedup requires, and lacks the approved spec/plan docs.
+
 ```bash
 cd ..
-git checkout main
-git pull --ff-only || true
-git checkout -b jird/unify-shilljudge-monorepo
+git checkout -b jird/unify-shilljudge-monorepo   # from current jird/dev-25 HEAD
 git branch --show-current
 ```
 
-Expected: on branch `jird/unify-shilljudge-monorepo`.
+Expected: on branch `jird/unify-shilljudge-monorepo`, with the DEV-25 core commits and the spec/plan docs present in history (`git log --oneline -5`).
 
 - [ ] **Step 3: Verify the archive is complete**
 
