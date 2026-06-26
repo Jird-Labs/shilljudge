@@ -1,0 +1,25 @@
+# ShillJudge — self-hostable open-core app (core + community extensions).
+# Premium extensions require a licensed host — see extensions/premium/.
+services:
+  shilljudge:
+    build:
+      context: .
+      dockerfile: app/Containerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - shilljudge-data:/app/data
+    env_file: ./app/.env
+    environment:
+      DB_PATH: /app/data/shilljudge.db
+      X_TOKEN_PATH: /app/data/x_oauth_tokens.json
+      FRONTEND_URL: http://localhost:8080
+      CORE_ENABLE_PREMIUM: "0"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shilljudge-data:

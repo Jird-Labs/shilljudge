@@ -286,11 +286,6 @@ def _rescore_thread(x_client: Client, thread_id: int, weights: dict[str, Any]) -
 
 # ── Health ──────────────────────────────────────────────────────────────────
 
-@app.get("/")
-async def read_root() -> dict[str, str]:
-    return {"message": "Hello from backend!"}
-
-
 @app.get("/status")
 async def poll_status() -> dict[str, Any]:
     """Background poller health (public). Returns status, rate_limited_until, last_poll_at."""
@@ -877,6 +872,15 @@ async def override_thread_score(
         set_thread_score_override(thread_id, body.override_score, body.note, admin["x_id"])
     return get_thread_score(thread_id)
 
+
+import os as _os
+from pathlib import Path as _Path
+from fastapi.staticfiles import StaticFiles
+
+_dist = _Path(_os.environ.get("FRONTEND_DIST", _Path(__file__).resolve().parent.parent / "frontend" / "dist"))
+if _dist.is_dir():
+    # html=True serves index.html for unknown paths (SPA client routing).
+    app.mount("/", StaticFiles(directory=str(_dist), html=True), name="spa")
 
 if __name__ == "__main__":
     import uvicorn
